@@ -47,9 +47,7 @@ public class UploadJob extends HttpServlet {
 
         // Get the job information from the request
 
-        System.out.println("hello");
-
-        String organizationName = request.getParameter("organizationName");
+        String organizationName = request.getParameter("organizationName");//graduation yr, dept id,
         String organizationDetails = request.getParameter("organizationDetails");
         String qualificationsRequired = request.getParameter("qualificationsRequired");
         int numberOfOpenings = Integer.parseInt(request.getParameter("numberOfOpenings"));
@@ -96,7 +94,6 @@ public class UploadJob extends HttpServlet {
                 } else {
                     System.out.println("Some error has occurred.");
                     response.getWriter().write("error");
-
                 }
             }
         } catch (SQLException ex) {

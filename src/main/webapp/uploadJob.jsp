@@ -65,11 +65,6 @@
         </div>
 
         <div>
-            <label for="startDate" class="block text-sm font-medium text-gray-600">Start Date</label>
-            <input type="date" id="startDate" name="startDate" class="mt-1 p-2 w-full border rounded-md">
-        </div>
-
-        <div>
             <label for="skillsRequired" class="block text-sm font-medium text-gray-600">Skills Required</label>
             <input type="text" id="skillsRequired" name="skillsRequired" class="mt-1 p-2 w-full border rounded-md">
         </div>
@@ -88,7 +83,13 @@
 
 <script>
     $(document).ready(function() {
-        console.log("Je");
+
+        $("#submitBtn").click(function() {
+            if(validateForm())
+                submitForm()
+        });
+
+
         let xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function () {
             if (xhr.readyState === 4 && xhr.status === 200) {
@@ -108,6 +109,7 @@
 
         xhr.open('GET', 'fetchDepartment', true);
         xhr.send();
+
 
         // Function to validate the form
         function validateForm() {

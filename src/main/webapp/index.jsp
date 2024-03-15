@@ -7,6 +7,10 @@
 <body>
 <br/>
 <a href="uploadJob.jsp">Go to Post new Job</a>
-<a href="home.jsp">Show job opportunities</a>
+<br>
+<a href="SignUp.jsp">Sign Up</a>
+<br>
+<%--<a href="home.jsp">Show job opportunities</a>--%>
 </body>
+
 </html>
