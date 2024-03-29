@@ -60,6 +60,7 @@ public class SignUp extends HttpServlet {
         String gender = request.getParameter("gender");
         double averageCGPA = Double.parseDouble(request.getParameter("averageCGPA"));
         String course = request.getParameter("course");
+        String password = request.getParameter("password");
         int startYear = Integer.parseInt(request.getParameter("startYear"));
         int endYear = Integer.parseInt(request.getParameter("endYear"));
 
@@ -91,17 +92,18 @@ public class SignUp extends HttpServlet {
             } else {
                 // Insert new user into Student table
                 PreparedStatement insertStmt = conn.prepareStatement(
-                        "INSERT INTO Student (StudentID, ContactNumber, Email, DepartmentID, SchoolID, Gender, AverageCGPA, Course, StartYear, EndYear) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                        "INSERT INTO Student (StudentID, ContactNumber, Email, DepartmentID, Password, SchoolID, Gender, AverageCGPA, Course, StartYear, EndYear) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
                 insertStmt.setString(1, idNumber);
                 insertStmt.setString(2, contactNumber);
                 insertStmt.setString(3, email);
                 insertStmt.setInt(4, departmentID);
-                insertStmt.setInt(5, schoolID);
-                insertStmt.setString(6, gender);
-                insertStmt.setDouble(7, averageCGPA);
-                insertStmt.setString(8, course);
-                insertStmt.setInt(9, startYear);
-                insertStmt.setInt(10, endYear);
+                insertStmt.setString(5, password);
+                insertStmt.setInt(6, schoolID);
+                insertStmt.setString(7, gender);
+                insertStmt.setDouble(8, averageCGPA);
+                insertStmt.setString(9, course);
+                insertStmt.setInt(10, startYear);
+                insertStmt.setInt(11, endYear);
                 int rowsAffected = insertStmt.executeUpdate();
                 if (rowsAffected > 0) {
                     out.write("User with ID " + idNumber + " successfully added.");

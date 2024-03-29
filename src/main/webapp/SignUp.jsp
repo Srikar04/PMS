@@ -81,6 +81,16 @@
         </div>
 
         <div>
+            <label for="password" class="block text-sm font-medium text-gray-600">Password</label>
+            <input type="password" id="password" name="password" class="mt-1 p-2 w-full border rounded-md">
+        </div>
+
+        <div>
+            <label for="confirmPassword" class="block text-sm font-medium text-gray-600">Confirm Password</label>
+            <input type="password" id="confirmPassword" name="confirmPassword" class="mt-1 p-2 w-full border rounded-md">
+        </div>
+
+        <div>
             <button type="button" id="submitBtn" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">Submit</button>
         </div>
     </form>
@@ -159,10 +169,12 @@
             let course = $("#course").val().trim();
             let startYear = $("#startYear").val();
             let endYear = $("#endYear").val();
+            let passwd = $("#password").val().trim();
+            let conPasswd = $("#confirmPassword").val().trim();
 
             // Your validation logic here
             // For example, you can check if fields are empty or if they meet certain criteria
-            if (idNumber === "" || contactNumber === "" || email === "" || averageCGPA === "" || course === "" || startYear === "" || endYear === "") {
+            if (idNumber === "" || contactNumber === "" || email === "" || averageCGPA === "" || course === "" || startYear === "" || endYear === ""|| passwd === "" || conPasswd === "") {
                 alert("All fields are required");
                 return false;
             }
@@ -193,6 +205,16 @@
                 return false;
             }
 
+            if(passwd.length > 20){
+                alert("Length of password must not cross 20 characters");
+                return false;
+            }
+
+            if(passwd !== conPasswd){
+                alert("Passwords not Matching");
+                return false;
+            }
+
             return true;
         }
 
@@ -207,6 +229,7 @@
                 success: function (response) {
                     // Handle the success response as needed
                     alert(response);
+                    window.location.href = "SignIn.jsp";
                 },
                 error: function (error) {
                     // Handle the error as needed
