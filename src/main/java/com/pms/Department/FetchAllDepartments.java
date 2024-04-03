@@ -1,4 +1,4 @@
-package com.pms;
+package com.pms.Department;
 
 import java.io.*;
 import java.sql.*;
@@ -10,24 +10,19 @@ import java.util.logging.Logger;
 
 import com.google.gson.Gson;
 import com.pms.Coordinator.UploadJob;
+import com.pms.FetchDepartment;
 import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.*;
 
-@WebServlet(name = "fetchSchool", value = "/fetchSchool")
-public class FetchSchool extends HttpServlet {
-    private String message;
-
-    public void init() {
-        message = "Hello World!";
-    }
-
+@WebServlet(name = "fetchAllDepartments", value = "/fetchAllDepartments")
+public class FetchAllDepartments extends HttpServlet {
     private static Properties getConnectionData() {
         Properties props = new Properties();
 
         String fileName = "db.properties";
 
         // Use the ClassLoader to load the file from the resources directory
-        try (InputStream in = FetchSchool.class.getClassLoader().getResourceAsStream(fileName)){
+        try (InputStream in = FetchDepartment.class.getClassLoader().getResourceAsStream(fileName)){
             props.load(in);
         } catch (IOException ex) {
             Logger lgr = Logger.getLogger(UploadJob.class.getName());
@@ -37,7 +32,8 @@ public class FetchSchool extends HttpServlet {
     }
 
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        List<String> schools = new ArrayList<String>();
+
+        List<String> departments = new ArrayList<>();
 
         Properties props = getConnectionData();
         String url = props.getProperty("db.url");
@@ -51,11 +47,11 @@ public class FetchSchool extends HttpServlet {
         }
 
         try (Connection con = DriverManager.getConnection(url, user, passwd)) {
-            String query = "SELECT SchoolName FROM School";
+            String query = "SELECT DepartmentName FROM Department";
             try (PreparedStatement preparedStatement = con.prepareStatement(query)) {
-                ResultSet rs = preparedStatement.executeQuery(query);
+                ResultSet rs = preparedStatement.executeQuery();
                 while (rs.next()) {
-                    schools.add(rs.getString("SchoolName"));
+                    departments.add(rs.getString("DepartmentName"));
                 }
             }
         } catch (SQLException ex) {
@@ -65,16 +61,13 @@ public class FetchSchool extends HttpServlet {
         }
 
         // Convert departments to JSON and send as response
-        String jsonResponse = new Gson().toJson(schools);
+        String jsonResponse = new Gson().toJson(departments);
 
         // Wrap the JSON response in an object with a "schools" property
-        String finalResponse = "{\"schools\":" + jsonResponse + "}";
+        String finalResponse = "{\"departments\":" + jsonResponse + "}";
 
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         response.getWriter().write(finalResponse);
-    }
-
-    public void destroy() {
     }
 }

@@ -44,7 +44,7 @@
 
         <div>
             <label for="departments" class="block text-sm font-medium text-gray-600">Select a Department</label>
-            <select multiple id="departments" class="mt-1 p-2 w-full border rounded-md h-40">
+            <select multiple id="departments"  name="departments" class="mt-1 p-2 w-full border rounded-md h-40">
                 <!-- Options will be dynamically loaded here -->
             </select>
         </div>
@@ -75,6 +75,11 @@
         </div>
 
         <div>
+            <label for="graduationYear" class="block text-sm font-medium text-gray-600">Graduation Year</label>
+            <input type="number" id="graduationYear" name="graduationYear" class="mt-1 p-2 w-full border rounded-md">
+        </div>
+
+        <div>
             <button type="button"  id="submitBtn" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">Submit</button>
         </div>
 
@@ -89,26 +94,28 @@
                 submitForm()
         });
 
+        $.ajax({
+            url: 'fetchAllDepartments',
+            method: 'GET',
+            dataType: 'json',
+            success: function(response) {
+                console.log(response);
+                let departments = response.departments;
+                let selectElement = $('#departments');
 
-        let xhr = new XMLHttpRequest();
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState === 4 && xhr.status === 200) {
-                console.log(xhr.responseText);
-                let departments = JSON.parse(xhr.responseText);
-                let selectElement = document.getElementById('departments');
+                // Clear existing options
+                selectElement.empty();
 
                 // Add options to the select element
-                departments.forEach(function (department) {
-                    let option = document.createElement('option');
-                    option.value = department.trim(); // Trim to remove leading/trailing spaces
-                    option.text = department.trim();
-                    selectElement.add(option);
-               });
+                departments.forEach(function(department) {
+                    let option = $('<option></option>').attr('value', department.trim()).text(department.trim());
+                    selectElement.append(option);
+                });
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.error("Error fetching departments:", errorThrown);
             }
-        };
-
-        xhr.open('GET', 'fetchDepartment', true);
-        xhr.send();
+        });
 
 
         // Function to validate the form
@@ -146,11 +153,7 @@
         // Function to submit the form using AJAX
         function submitForm() {
             let jobForm =  $("#jobForm");
-            let formData = {};
-           jobForm.serializeArray().forEach(function(item) {
-                formData[item.name] = item.value;
-            });
-
+            let formData = jobForm.serialize();
             $.ajax({
                 url: jobForm.attr("action"),
                 method: jobForm.attr("method"),

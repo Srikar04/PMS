@@ -8,15 +8,15 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.DriverManager;
+import java.sql.Date;
 import java.sql.SQLException;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.io.FileInputStream;
 
 
 @WebServlet(name = "uploadJob", value = "/uploadJob")
@@ -45,18 +45,22 @@ public class UploadJob extends HttpServlet {
 
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 
-        // Get the job information from the request
-
-        String organizationName = request.getParameter("organizationName");//graduation yr, dept id,
+        String organizationName = request.getParameter("organizationName");
         String organizationDetails = request.getParameter("organizationDetails");
         String qualificationsRequired = request.getParameter("qualificationsRequired");
         int numberOfOpenings = Integer.parseInt(request.getParameter("numberOfOpenings"));
-        String jobLocation = request.getParameter("jobLocation");
+        String departments = String.join(",", request.getParameterValues("departments"));
         String jobDesignation = request.getParameter("jobDesignation");
         String jobDescription = request.getParameter("jobDescription");
-        String startDate = request.getParameter("startDate");
+        String jobLocation = request.getParameter("jobLocation");
         String skillsRequired = request.getParameter("skillsRequired");
+
         String lastDateToApply = request.getParameter("lastDateToApply");
+        Date sqlDate = java.sql.Date.valueOf(lastDateToApply);
+
+        int graduationYear = Integer.parseInt(request.getParameter("graduationYear"));
+
+        System.out.println(departments);
 
         Properties props = getConnectionData();
         String url = props.getProperty("db.url");
@@ -70,9 +74,8 @@ public class UploadJob extends HttpServlet {
         }
 
         try (Connection con = DriverManager.getConnection(url, user, passwd)) {
-            String query = "INSERT INTO Job (OrgName, OrgDescription, JobDesignation, JobDescription, JobLocation, " +
-                    "NumberOfOpenings, Qualification, SkillsRequired, StartDate, LastDateToApply) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            String query = "INSERT INTO Jobs (OrgName, OrgDesc, JobName, JobDesc, JobLocation, NumberOfOpenings, Qualification, Departments, SkillsRequired, LastDateToApply,GraduationYear) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             try (PreparedStatement preparedStatement = con.prepareStatement(query)) {
                 // Set parameters for the query
                 preparedStatement.setString(1, organizationName);
@@ -80,12 +83,12 @@ public class UploadJob extends HttpServlet {
                 preparedStatement.setString(3, jobDesignation);
                 preparedStatement.setString(4, jobDescription);
                 preparedStatement.setString(5, jobLocation);
-                preparedStatement.setString(6, String.valueOf(numberOfOpenings));
-                preparedStatement.setString(7,qualificationsRequired);
-                preparedStatement.setString(8,skillsRequired);
-                preparedStatement.setString(9,startDate);
-                preparedStatement.setString(10,lastDateToApply);
-                // Add other parameters accordingly
+                preparedStatement.setInt(6, numberOfOpenings);
+                preparedStatement.setString(7, qualificationsRequired);
+                preparedStatement.setString(8, departments);
+                preparedStatement.setString(9, skillsRequired);
+                preparedStatement.setDate(10, sqlDate);
+                preparedStatement.setInt(11, graduationYear);
 
                 int rowsInserted = preparedStatement.executeUpdate();
                 if (rowsInserted > 0) {
@@ -95,13 +98,13 @@ public class UploadJob extends HttpServlet {
                     System.out.println("Some error has occurred.");
                     response.getWriter().write("error");
                 }
+            }catch (SQLException ex) {
+                ex.printStackTrace();  // Log the exception for debugging
             }
-        } catch (SQLException ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();  // Log the exception for debugging
-            String errorMessage = "Some error has occurred";
+            System.out.println("error");
             response.getWriter().write("error "+ex.getMessage());
         }
     }
-
-
 }

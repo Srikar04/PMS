@@ -11,11 +11,7 @@ import jakarta.servlet.annotation.*;
 
 @WebServlet(name = "signIn", value = "/signIn")
 public class SignIn extends HttpServlet {
-    private String message;
 
-    public void init() {
-        message = "Hello World!";
-    }
 
     private static Properties getConnectionData() {
         Properties props = new Properties();
@@ -36,8 +32,9 @@ public class SignIn extends HttpServlet {
         PrintWriter out = response.getWriter();
 
         // Extract form data
-        String id = request.getParameter("id").toUpperCase();
+        String email = request.getParameter("email").trim();
         String password = request.getParameter("password");
+        String userType = request.getParameter("userType");
 
         Properties props = getConnectionData();
         String url = props.getProperty("db.url");
@@ -51,20 +48,37 @@ public class SignIn extends HttpServlet {
         }
 
         try (Connection conn = DriverManager.getConnection(url, user, passwd)) {
-            PreparedStatement statement = conn.prepareStatement("SELECT Password FROM Student WHERE StudentID = ?");
-            statement.setString(1, id);
+            PreparedStatement statement;
+            if ("Student".equals(userType)) {
+                statement = conn.prepareStatement("SELECT Password FROM Student WHERE Email = ?");
+            } else if ("Coordinator".equals(userType)) {
+                statement = conn.prepareStatement("SELECT Password FROM Coordinator WHERE Email = ?");
+            } else if ("TPO".equals(userType)) {
+                statement = conn.prepareStatement("SELECT Password FROM TPO WHERE Email = ?");
+            } else if ("Chairman".equals(userType)) {
+                statement = conn.prepareStatement("SELECT Password FROM Chairman WHERE Email = ?");
+            } else {
+                out.println("Invalid User Type");
+                return;
+            }
 
+            statement.setString(1, email);
             ResultSet resultSet = statement.executeQuery();
 
             if (resultSet.next()) {
                 String storedPassword = resultSet.getString("Password");
                 if (password.equals(storedPassword)) {
+                    // Create session and set userType and userId attributes
+                    HttpSession session = request.getSession();
+                    session.setAttribute("userType", userType);
+                    session.setAttribute("userEmail", email); // Storing email as userId
+
                     out.println("Success");
                 } else {
                     out.println("Incorrect Password! Please try again.");
                 }
             } else {
-                out.println("Error: Email not found!");
+                out.println("Error: User not found!");
             }
         } catch (SQLException ex) {
             ex.printStackTrace();

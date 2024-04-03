@@ -15,8 +15,18 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 
-<body class="bg-gray-100 p-8">
-<div class="max-w-md mx-auto bg-white rounded p-6 shadow-md">
+<body class="bg-gray-100">
+
+<nav class="fixed top-0 z-50 w-full bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+    <div class="flex flex-wrap justify-between items-center p-4">
+        <a href="https://flowbite.com" class="flex items-center space-x-3 rtl:space-x-reverse">
+            <img src="https://flowbite.com/docs/images/logo.svg" class="h-8" alt="Flowbite Logo" />
+            <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">PMS</span>
+        </a>
+    </div>
+</nav>
+
+<div class="max-w-2xl mx-auto bg-white rounded p-6 shadow-md mt-20">
 
     <h1 class="text-2xl font-semibold mb-4">Student Sign Up Form</h1>
 
@@ -37,16 +47,18 @@
             <input type="email" id="email" name="email" class="mt-1 p-2 w-full border rounded-md">
         </div>
 
-        <div>
-            <label for="department" class="block text-sm font-medium text-gray-600">Department</label>
-            <select id="department" name="department" class="mt-1 p-2 w-full border rounded-md">
-                <!-- Options will be dynamically loaded here -->
-            </select>
-        </div>
 
         <div>
             <label for="school" class="block text-sm font-medium text-gray-600">School</label>
             <select id="school" name="school" class="mt-1 p-2 w-full border rounded-md">
+                <!-- Options will be dynamically loaded here -->
+            </select>
+        </div>
+
+
+        <div>
+            <label for="department" class="block text-sm font-medium text-gray-600">Department</label>
+            <select id="department" name="department" class="mt-1 p-2 w-full border rounded-md">
                 <!-- Options will be dynamically loaded here -->
             </select>
         </div>
@@ -102,50 +114,66 @@
 <script>
     $(document).ready(function() {
 
+        fetchAllSchools();
+
+        // Function to fetch all schools via AJAX
+        function fetchAllSchools() {
+            $.ajax({
+                url: 'fetchSchool', // Endpoint to fetch all schools
+                method: 'GET',
+                success: function(response) {
+                    // Update school options based on response
+                    let schools = response.schools;
+                    let selectElement = document.getElementById('school');
+                    selectElement.innerHTML = ''; // Clear existing options
+                    schools.forEach(function(school) {
+                        let option = document.createElement('option');
+                        option.value = school.trim(); // Trim to remove leading/trailing spaces
+                        option.text = school.trim();
+                        selectElement.add(option);
+                    });
+                },
+                error: function(error) {
+                    // Handle the error as needed
+                    console.error("Error fetching schools:", error);
+                }
+            });
+        }
+
+        $('#school').change(function() {
+            let selectedSchool = $(this).val().trim(); // Get the selected school
+            fetchDepartmentFields(selectedSchool); // Fetch relevant fields for the selected school
+        });
+
+        function fetchDepartmentFields(selectedSchool) {
+            $.ajax({
+                url: 'fetchDepartment',
+                method: 'POST',
+                data: { schoolName: selectedSchool },
+                success: function(response) {
+
+                    let departments = response.departments;
+                    let selectElement = document.getElementById('department');
+                    selectElement.innerHTML = '';
+                    departments.forEach(function(department) {
+                        let option = document.createElement('option');
+                        option.value = department.trim();
+                        option.text = department.trim();
+                        selectElement.add(option);
+                    });
+                },
+                error: function(error) {
+                    console.error("Error fetching department fields:", error);
+                }
+            });
+        }
+
+
         $("#submitBtn").click(function() {
             if(validateForm())
                 submitForm()
         });
 
-        let deptXhr = new XMLHttpRequest();
-        deptXhr.onreadystatechange = function () {
-            if (deptXhr.readyState === 4 && deptXhr.status === 200) {
-                console.log(deptXhr.responseText);
-                let departments = JSON.parse(deptXhr.responseText);
-                let selectElement = document.getElementById('department');
-
-                // Add options to the select element
-                departments.forEach(function (department) {
-                    let option = document.createElement('option');
-                    option.value = department.trim(); // Trim to remove leading/trailing spaces
-                    option.text = department.trim();
-                    selectElement.add(option);
-                });
-            }
-        };
-
-        deptXhr.open('GET', 'fetchDepartment', true);
-        deptXhr.send();
-
-        let schoolXhr = new XMLHttpRequest();
-        schoolXhr.onreadystatechange = function () {
-            if (schoolXhr.readyState === 4 && schoolXhr.status === 200) {
-                console.log(schoolXhr.responseText);
-                let departments = JSON.parse(schoolXhr.responseText);
-                let selectElement = document.getElementById('school');
-
-                // Add options to the select element
-                departments.forEach(function (department) {
-                    let option = document.createElement('option');
-                    option.value = department.trim(); // Trim to remove leading/trailing spaces
-                    option.text = department.trim();
-                    selectElement.add(option);
-                });
-            }
-        };
-
-        schoolXhr.open('GET', 'fetchSchool', true);
-        schoolXhr.send();
 
         // Function to check if a value is a string
         function isString(value) {
@@ -241,7 +269,5 @@
 
     });
 </script>
-
-</body>
 </html>
 
